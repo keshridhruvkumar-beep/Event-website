@@ -80,49 +80,64 @@ header a, header button{
 
 <script>
 function goToAdd(){
-window.location.href = "./addevent.html"
+  window.location.href = "./addevent.html"
 }
 
 let events = JSON.parse(localStorage.getItem("events")) || []
 
 let today = new Date()
+today.setHours(0,0,0,0)
+
+//keep today & future events only
 events = events.filter(e => new Date(e.date) >= today)
+
+//sort events by date
 events.sort((a,b)=> new Date(a.date)-new Date(b.date))
 
 let nearest = document.getElementById("nearestEvent")
 let upcoming = document.getElementById("upcomingList")
 
-if(events.length === 0){
-  nearest.innerHTML = "<p>No upcoming events</p>"
-}else{
-  let e = events[0]
-  nearest.innerHTML = `
-    <h2>${e.name}</h2>
-    <p><b>Date:</b> ${e.date}</p>
-    <p><b>Time:</b> ${e.time}</p>
-    <p><b>Category:</b> ${e.category}</p>
-    <p>${e.desc}</p>
-  `
+nearest.innerHTML = ""
+upcoming.innerHTML = ""
 
-  events.slice(1).forEach(ev=>{
-    let div = document.createElement("div")
-    div.className="event-card"
-    div.innerHTML = `
-  <b>${ev.name}</b><br>
-  ${ev.date} | ${ev.category}<br>
-  <button onclick="deleteEvent(${i})">Delete</button>
-    `
-    upcoming.appendChild(div)
-  })
-}
-  function deleteEvent(index){
+function deleteEvent(index){
   let events = JSON.parse(localStorage.getItem("events")) || []
   events.splice(index,1)
   localStorage.setItem("events", JSON.stringify(events))
   location.reload()
 }
 
+if(events.length === 0){
+  nearest.innerHTML = "<p>No upcoming events</p>"
+}else{
+  //nearest
+  let e = events[0]
+  nearest.innerHTML = `
+    <h2>${e.name}</h2>
+    <p><b>Date:</b> ${e.date}</p>
+    <p><b>Time:</b> ${e.time}</p>
+    <p><b>Category:</b> ${e.category}</p>
+    <p>${e.desc || ""}</p>
+    <button onclick="deleteEvent(0)">Delete</button>
+  `
+//upcoming
+  if(events.length > 1){
+    events.slice(1).forEach((ev, i)=>{
+      let div = document.createElement("div")
+      div.className="event-card"
+      div.innerHTML = `
+        <b>${ev.name}</b><br>
+        ${ev.date} | ${ev.category}<br>
+        <button onclick="deleteEvent(${i+1})">Delete</button>
+      `
+      upcoming.appendChild(div)
+    })
+  }else{
+    upcoming.innerHTML = "<p>No more upcoming events</p>"
+  }
+}
 </script>
+
 
 </body>
 </html>
